@@ -61,4 +61,25 @@ bool randomChance(double p);
  */
 void setRandomSeed(int seed);
 
+// extra functions to facilitate creation of autograder programs
+namespace autograder {
+/*
+ * Inserts the given integer to be returned by the random number generator,
+ * rather than truly random numbers.
+ */
+void randomFeedInteger(int value);
+
+/*
+ * Inserts the given real number to be returned by the random number generator,
+ * rather than truly random numbers.
+ */
+void randomFeedReal(double value);
+
+/*
+ * Inserts the given boolean value to be returned by the random number
+ * generator, rather than truly random choices.
+ */
+void randomFeedBool(bool value);
+}
+
 #endif

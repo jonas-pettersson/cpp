@@ -56,4 +56,6 @@ class InterruptedIOException : public std::exception {};
 
 void error(std::string msg);
 
+#include "private/main.h"
+
 #endif

@@ -1,17 +1,14 @@
 /*
  * File: direction.h
  * -----------------
- * This file exports an enumerated type called <code>Direction</code>
- * whose elements are the four compass points: <code>NORTH</code>,
- * <code>EAST</code>, <code>SOUTH</code>, and <code>WEST</code>.
+ * This interface exports an enumerated type called Direction whose
+ * elements are the four compass points: NORTH, EAST, SOUTH, and WEST.
  */
 
 #ifndef _direction_h
 #define _direction_h
 
-#include <iostream>
 #include <string>
-#include "private/foreachpatch.h"
 
 /*
  * Type: Direction
@@ -26,6 +23,7 @@ enum Direction { NORTH, EAST, SOUTH, WEST };
  * Usage: Direction newdir = leftFrom(dir);
  * ----------------------------------------
  * Returns the direction that is to the left of the argument.
+ * For example, leftFrom(NORTH) returns WEST.
  */
 
 Direction leftFrom(Direction dir);
@@ -35,18 +33,10 @@ Direction leftFrom(Direction dir);
  * Usage: Direction newdir = rightFrom(dir);
  * -----------------------------------------
  * Returns the direction that is to the right of the argument.
+ * For example, rightFrom(NORTH) returns EAST.
  */
 
 Direction rightFrom(Direction dir);
-
-/*
- * Function: opposite
- * Usage: Direction newdir = opposite(dir);
- * ----------------------------------------
- * Returns the direction that is opposite to the argument.
- */
-
-Direction opposite(Direction dir);
 
 /*
  * Function: directionToString
@@ -56,40 +46,5 @@ Direction opposite(Direction dir);
  */
 
 std::string directionToString(Direction dir);
-
-/*
- * Operator: <<
- * Usage: os << dir;
- * -----------------
- * Overloads the <code>&lt;&lt;</code> operator so that it is able
- * to display <code>Direction</code> values.
- */
-
-std::ostream & operator<<(std::ostream & os, const Direction & dir);
-
-/*
- * Operator: >>
- * Usage: is >> dir;
- * -----------------
- * Overloads the <code>&gt;&gt;</code> operator so that it is able
- * to read <code>Direction</code> values.
- */
-
-std::istream & operator>>(std::istream & os, Direction & dir);
-
-/*
- * Operator: ++
- * Usage: dir++
- * ------------
- * Overloads the suffix version of the <code>++</code> operator to
- * work with <code>Direction</code> values.  The sole purpose of this
- * definition is to support the idiom
- *
- *<pre>
- *    for (Direction dir = NORTH; dir &lt;= WEST; dir++) ...
- *</pre>
- */
-
-Direction operator++(Direction & dir, int);
 
 #endif

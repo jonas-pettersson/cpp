@@ -9,11 +9,31 @@
 #include <ctime>
 #include <queue>
 #include "random.h"
+#include "private/randompatch.h"
 using namespace std;
 
 /* Private function prototype */
 
 static void initRandomSeed();
+
+namespace autograder {
+/* internal buffer of fixed random numbers to return; used by autograders */
+queue<int> fixedInts;
+queue<double> fixedReals;
+queue<bool> fixedBools;
+
+void randomFeedInteger(int value) {
+    fixedInts.push(value);
+}
+
+void randomFeedReal(double value) {
+    fixedReals.push(value);
+}
+
+void randomFeedBool(bool value) {
+    fixedBools.push(value);
+}
+}
 
 /*
  * Implementation notes: randomInteger
@@ -37,6 +57,11 @@ static void initRandomSeed();
  * performed using doubles instead of ints.
  */
 int randomInteger(int low, int high) {
+    if (!autograder::fixedInts.empty()) {
+        int top = autograder::fixedInts.front();
+        autograder::fixedInts.pop();
+        return top;
+    }
     initRandomSeed();
     double d = rand() / (double(RAND_MAX) + 1);
     double s = d * (double(high) - low + 1);
@@ -50,6 +75,11 @@ int randomInteger(int low, int high) {
  * without the final conversion step.
  */
 double randomReal(double low, double high) {
+    if (!autograder::fixedReals.empty()) {
+        double top = autograder::fixedReals.front();
+        autograder::fixedReals.pop();
+        return top;
+    }
     initRandomSeed();
     double d = rand() / (double(RAND_MAX) + 1);
     double s = d * (high - low);
@@ -63,6 +93,11 @@ double randomReal(double low, double high) {
  * whether the result is less than the requested probability.
  */
 bool randomChance(double p) {
+    if (!autograder::fixedBools.empty()) {
+        bool top = autograder::fixedBools.front();
+        autograder::fixedBools.pop();
+        return top;
+    }
     initRandomSeed();
     return randomReal(0, 1) < p;
 }

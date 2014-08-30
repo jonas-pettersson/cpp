@@ -12,6 +12,10 @@
 #include "simpio.h"
 using namespace std;
 
+namespace autograder {
+extern bool getConsoleEchoUserInput();
+}
+
 static void appendSpace(string& prompt);
 
 /*
@@ -32,6 +36,9 @@ int getInteger(string prompt, string reprompt) {
     while (true) {
         cout << prompt;
         getline(cin, line);
+        if (autograder::getConsoleEchoUserInput()) {
+            cout << line << endl;
+        }
         istringstream stream(line);
         stream >> value >> ws;
         if (!stream.fail() && stream.eof()) break;
@@ -51,6 +58,9 @@ double getReal(string prompt, string reprompt) {
     while (true) {
         cout << prompt;
         getline(cin, line);
+        if (autograder::getConsoleEchoUserInput()) {
+            cout << line << endl;
+        }
         istringstream stream(line);
         stream >> value >> ws;
         if (!stream.fail() && stream.eof()) break;
@@ -70,6 +80,9 @@ bool getYesOrNo(string prompt, string reprompt) {
     while (true) {
         cout << prompt;
         getline(cin, line);
+        if (autograder::getConsoleEchoUserInput()) {
+            cout << line << endl;
+        }
         if ((int) line.length() > 0) {
             char first = tolower(line[0]);
             if (first == 'y') {
@@ -101,6 +114,9 @@ string getLine(string prompt) {
     string line;
     cout << prompt;
     getline(cin, line);
+    if (autograder::getConsoleEchoUserInput()) {
+        cout << line << endl;
+    }
     return line;
 }
 
@@ -109,10 +125,16 @@ void getLine(string prompt, string& out) {
     string line;
     cout << prompt;
     getline(cin, out);
+    if (autograder::getConsoleEchoUserInput()) {
+        cout << line << endl;
+    }
 }
 
 void getLine(istream& input, string& out) {
     getline(input, out);
+    if (autograder::getConsoleEchoUserInput() && input == cin) {
+        cout << out << endl;
+    }
 }
 
 static void appendSpace(string& prompt) {
