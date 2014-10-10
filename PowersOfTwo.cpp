@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
 /* Function prototypes */
@@ -20,8 +21,9 @@ int main() {
   cout << "Enter exponent limit: ";
   cin >> limit;
   for (int i = 0; i <= limit; i++) {
-    cout << "2 to the " << i << " = "
-	 << raiseToPower(2, i) << endl;
+    cout << "2 to the "
+	 << right << setw(2) << i << " = "
+	 << setw(8) << raiseToPower(2, i) << endl;
   }
   return 0;
 }
