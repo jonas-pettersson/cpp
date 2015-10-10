@@ -1,9 +1,10 @@
 /*
- * File: MergeSort.cpp
+ * File: CountInversions.cpp
  * -----------------------
- * This program is an implementation of the merge sort
- * algorithm. It reads characters from std input
- * and writes the sorted result to std output.
+ * This program is an implementation of the count inversions
+ * algorithm based on merge sort idea. It reads integers from a file
+ * specified as the first argument of the program or prompted for
+ * and writes the result to std output.
  */
 
 #include <iostream>
@@ -15,18 +16,18 @@ using namespace std;
 /* Function prototypes */
 
 string promptUserForFile(ifstream & infile, string prompt);
-void sort(vector<int> & vec);
-void merge(vector<int> & vec, vector<int> & vec1, vector<int> & vec2);
+unsigned long countInv(vector<long> & vec);
+unsigned long mergeAndCount(vector<long> & vec, vector<long> & vec1, vector<long> & vec2);
 bool testFileName(ifstream & infile, string filename);
-void readFile(vector<int> & vec, ifstream & infile);
-void print(vector<int> & vec);
+void readFile(vector<long> & vec, ifstream & infile);
+void print(vector<long> & vec);
 
 /* Main program */
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
-  vector<int> in_numbers;
+  vector<long> in_numbers;
   ifstream infile;
   if (argc < 2) {
     promptUserForFile(infile, "Input file: ");
@@ -39,60 +40,68 @@ int main(int argc, char* argv[]) {
     }
   }
   readFile(in_numbers, infile);
-  sort(in_numbers);
-  print(in_numbers);
+  cout << countInv(in_numbers) << endl;
   return 0;
 }
 
 /*
- * Function: sort
+ * Function: countInv
  * --------------
- * This function sorts the elements of the vector into increasing order
- * using the merge sort algorithm, which consists of the following steps:
+ * This function counts the inversions of the integers in vector
+ * using the merge sort algorithm as basis, consisting of the following steps:
  *
  * 1. Divide the vector into two halves.
- * 2. Sort each of these smaller vectors recursively.
- * 3. Merge the two vectors back into the original one.
+ * 2. Sort and count inversions inside left and right vectors recursively.
+ * 3. Count slit inversions when merging the two vectors back into the original one.
  */
-void sort(vector<int> & vec) {
-  int n = vec.size();
-  if (n <= 1) return;
-  vector<int> vec1;
-  vector<int> vec2;
-  for (int i = 0; i < n; i++) {
+unsigned long countInv(vector<long> & vec) {
+  unsigned long l, r, s = 0; // left, right, and split counts
+  long n = vec.size();
+  if (n <= 1) return 0;
+  vector<long> vec1;
+  vector<long> vec2;
+  for (long i = 0; i < n; i++) {
     if (i < n / 2) 
       vec1.push_back(vec[i]);
     else 
       vec2.push_back(vec[i]);  
   }
-  sort(vec1);
-  sort(vec2);
+  l = countInv(vec1);
+  r = countInv(vec2);
   vec.clear();
-  merge(vec, vec1, vec2);
+  s = mergeAndCount(vec, vec1, vec2);
+  return l + r + s;
 }
 
 /*
- * Function: merge
+ * Function: mergeAndCount
  * ---------------
  * This function merges two sorted vectors, v1 and v2, into the vector
- * vec, which should be empty before this operation. Because the input
- * vectors are sorted, the implementation can always select the first
+ * vec, and simultaneously counts the umber of invertions split between these
+ * two vectors.Because the input vectors are sorted, the implementation can always select the first
  * unused element in one of the input vectors to fill the next position.
+ * In addition, it counts the number of invertions by recognizing the fact that
+ * when an element of the 2nd array gets copied to vec it means that the remaining
+ * elements in the 1st vector are inversions f this element. Thus increment
+ * the count by the number of elements remaining in 1st array.
  */
-void merge(vector<int> & vec, vector<int> & vec1, vector<int> & vec2) {
-  int n1 = 0;
-  int n2 = 0;
-  int vec1size = vec1.size();
-  int vec2size = vec2.size();
+unsigned long mergeAndCount(vector<long> & vec, vector<long> & vec1, vector<long> & vec2) {
+  long n1 = 0;
+  long n2 = 0;
+  long vec1size = vec1.size();
+  long vec2size = vec2.size();
+  unsigned long count = 0;
   while (n1 < vec1size && n2 < vec2size) {
     if (vec1[n1] < vec2[n2]) {
       vec.push_back(vec1[n1++]);
     } else {
       vec.push_back(vec2[n2++]);
+      count += vec1size - n1;
     }
   }
   while (n1 < vec1size) vec.push_back(vec1[n1++]);
   while (n2 < vec2size) vec.push_back(vec2[n2++]);
+  return count;
 }
 
 /*
@@ -101,7 +110,7 @@ void merge(vector<int> & vec, vector<int> & vec1, vector<int> & vec2) {
  * --------------------------------------
  * Asks for a file with numbers and reads the numbers into the vector;
  */
-void readFile(vector<int> & vec, ifstream & infile) {
+void readFile(vector<long> & vec, ifstream & infile) {
   int value;
   while (infile >> value) {
     vec.push_back(value);
@@ -115,9 +124,9 @@ void readFile(vector<int> & vec, ifstream & infile) {
  * ------------------------------------
  * Prints the content of a vector, one item per line.
  */
-void print(vector<int> & vec) {
-  int n = vec.size();
-  for (int i = 0; i < n; i++) {
+void print(vector<long> & vec) {
+  long n = vec.size();
+  for (long i = 0; i < n; i++) {
     cout << vec[i] << endl;
   }
 }
