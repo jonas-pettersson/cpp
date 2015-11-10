@@ -1,0 +1,5 @@
+Answers are:
+size   first      last      median
+10     25        29        21
+100   615      587      518
+1000 10297 10184  8921
