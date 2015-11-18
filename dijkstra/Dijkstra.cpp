@@ -34,10 +34,12 @@
 #include <algorithm>
 using namespace std;
 
-typedef vector<int>::iterator VecIterator;  // aliasing the vector iterator type used
 typedef set<pair <int, int> >::iterator SetIterator;  // aliasing the set iterator type used
-typedef set<int>::iterator SetIntIterator;  // aliasing the set iterator type used
+typedef set<int>::iterator SetIntIterator;  // aliasing the set with int iterator type used
 typedef map<int, set<pair <int, int> > >::iterator MapIterator;  // aliasing the map iterator type used
+typedef map<int, list<int> >::iterator MapListIterator;  // aliasing the map list iterator type used
+typedef map<int, int>::iterator MapIntIterator;  // aliasing the map int iterator type used
+typedef list<int>::iterator ListIterator;  // aliasing the set iterator type used
 
 /* Function prototypes */
 
@@ -45,9 +47,12 @@ string promptUserForFile(ifstream & infile, string prompt);
 bool testFileName(ifstream & infile, string filename);
 void readFile(map<int, set<pair<int, int> > > & graph, ifstream & infile);
 void print(map<int, set<pair<int, int> > > & graph);
+void print(map<int, int> & distances);
+void print(map<int, list<int> > & pathmap);
+void print(map<int, int> & distances, map<int, list<int> > & pathmap);
 int stringToInteger(string str);
 
-void mainloop(map<int, set<pair<int, int> > > & graph, set<int> & processed, int distances[]);
+void mainloop(map<int, set<pair<int, int> > > & graph, set<int> & processed, map<int, int> & distances, map<int, list<int> > & pathmap);
 
 int sourceNode, maxNodes;
 const int MAX_DIST = 1000000;
@@ -78,23 +83,46 @@ int main(int argc, char* argv[]) {
       return 1;
     }
   }
-  cout << "start: " << sourceNode << " max nodes: " << maxNodes << endl;
+  // cout << "start: " << sourceNode << " max nodes: " << maxNodes << endl;
 
+  /*
+   * graph is a map with vertices as keys pointing to a
+   * set of pair<int, int> which represent target nodes.
+   * The first element of the pair is the node number and
+   * the second of the pair is the edge length.
+   */
   map<int, set<pair<int, int> > > graph;
   readFile(graph, infile);
+  // print(graph);
 
-  set<int> processed; // vertices processed so far
+  set<int> processed; // set with th vertices processed so far
   processed.insert(sourceNode);  
 
-  int distances[maxNodes]; // computed shortest path distances
-  memset(distances, MAX_DIST, sizeof distances); // set all distances to max
+  /*
+   * distances is a map containing the computed shortest path distances.
+   * The key is the node number and the value is the distance.
+   */
+  map<int, int> distances;
+  for (MapIterator it = graph.begin(); it != graph.end(); ++it) {  // set all distances to max
+    distances[it -> first] = MAX_DIST;
+  }
+
+  /*
+   * pathmap is a map containing all shortest paths.
+   * the key is the node and each element is a list
+   * with the shortest path nodes for the key node.
+   */
+  map<int, list<int> > pathmap;
 
   distances[sourceNode] = 0; // set distance to source node equal to zero
+  pathmap[sourceNode]; // set shortest path for source node to empty set
 
   // lets start
-  mainloop(graph, processed, distances);
+  mainloop(graph, processed, distances, pathmap);
 
-  print(graph);
+  // print(distances);
+  // print(pathmap);
+  print(distances, pathmap);
 
   return 0;
 }
@@ -107,12 +135,40 @@ int main(int argc, char* argv[]) {
  * adding the processed node to the processed array
  * until there are no more nodes to process.
  */
-void mainloop(map<int, set<pair<int, int> > > & graph, set<int> & processed, int distances[]) {
+void mainloop(map<int, set<pair<int, int> > > & graph, set<int> & processed, map<int, int> & distances, map<int, list<int> > & pathmap) {
   int graph_size = graph.size();
+  int x_node_path, edge_node, edge_length;
+  int min_x_node, min_edge, min_edge_length, greedy_score;
+  set<pair <int, int> > target_nodes;
   for (int i = 1; i < graph_size; i++) {
-    for (SetIntIterator it = processed.begin(); it != processed.end(); ++it) {
-  
+    //cout << "round: " << i << endl;
+    min_edge_length = MAX_DIST;
+    for (SetIntIterator x_node = processed.begin(); x_node != processed.end(); ++x_node) {
+      //cout << "current x node: " << *x_node << endl;
+      x_node_path = distances[*x_node];
+      //cout << "current x path dist: " << x_node_path << endl;
+      target_nodes = graph[*x_node];
+      for (SetIterator edge_it = target_nodes.begin(); edge_it != target_nodes.end(); ++edge_it) {
+	edge_node = edge_it -> first;
+	//cout << "current edge node: " << edge_node << endl;
+	if (processed.count(edge_node) == 0) {
+	  edge_length = edge_it -> second;
+	  greedy_score = x_node_path + edge_length;
+	  //cout << "current greedy score: " << greedy_score << endl;
+	  if (greedy_score < min_edge_length) {
+	    min_x_node = *x_node;
+	    min_edge = edge_node;
+	    min_edge_length = greedy_score;
+	  }
+	}
+      }
     }
+    processed.insert(min_edge);
+    //cout << "min_edge = " << min_edge << endl;
+    distances[min_edge] = min_edge_length;
+    //cout << "min_edge_length = " << min_edge_length << endl;
+    pathmap[min_edge] = pathmap[min_x_node];
+    pathmap[min_edge].push_back(min_edge);
   }
 }
 
@@ -141,7 +197,6 @@ void readFile(map<int, set<pair<int, int> > > & graph, ifstream & infile) {
       edge_length = stringToInteger(target_edge.substr(di + 1));
       if (target_node <= maxNodes) {
 	row.insert(make_pair(target_node, edge_length));
-	// row[target_node - 1] = edge_length;
       } else {
 	cout << "Warning: node number exceeded max nodes" << endl;
       }
@@ -170,6 +225,39 @@ void print(map<int, set<pair<int, int> > > & graph) {
       cout << "(" << it2 -> first << ", " << it2 -> second << ")" << ", ";
     }
     cout << endl;
+  }
+}
+
+void print(map<int, int> & distances) {
+  for (MapIntIterator it = distances.begin(); it != distances.end(); ++it) {
+    cout << it -> first << " => " << it -> second << endl;
+  }
+}
+
+void print(map<int, list<int> > & pathmap) {
+  list<int> mlist;
+  for (MapListIterator it = pathmap.begin(); it != pathmap.end(); ++it) {
+    mlist = it -> second;
+    cout << it -> first << " => [";
+    for (ListIterator it2 = mlist.begin(); it2 != mlist.end(); ++it2) {
+      cout << *it2 << ", ";
+    }
+    cout << "]" << endl;
+  }
+}
+
+void print(map<int, int> & distances, map<int, list<int> > & pathmap) {
+  list<int> mlist;
+  int mnode, path_length; 
+  for (MapIntIterator it = distances.begin(); it != distances.end(); ++it) {
+    mnode = it -> first;
+    path_length = it -> second;
+    mlist = pathmap[mnode];
+    cout << mnode << " => " << path_length << " [";
+    for (ListIterator it2 = mlist.begin(); it2 != mlist.end(); ++it2) {
+      cout << *it2 << ", ";
+    }
+    cout << "]" << endl;
   }
 }
 
